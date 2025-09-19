@@ -1217,7 +1217,7 @@ local function LoadLogTab()
 end
 
 ----------------------------------------------------------------
--- SERVER TAB (FULL with Save Settings)
+-- SERVER TAB (FULL FIXED with Save Settings + Hide UI)
 ----------------------------------------------------------------
 
 -- ✅ Global UI Toggle Key (RightAlt by default)
@@ -1231,7 +1231,9 @@ if not getgenv().UIBinded then
     game:GetService("UserInputService").InputBegan:Connect(function(input, gp)
         if gp then return end
         if input.KeyCode == getgenv().UIKey then
-            MainFrame.Visible = not MainFrame.Visible
+            if MainFrame then
+                MainFrame.Visible = not MainFrame.Visible
+            end
         end
     end)
 end
@@ -1388,10 +1390,29 @@ local function LoadServerTab()
         AddLog("Save Settings "..(getgenv().SaveSettings and "ON" or "OFF"))
     end)
 
+    -- ✅ Label อธิบายใต้ปุ่ม Save Settings (2 บรรทัด)
+    local saveInfo1 = Instance.new("TextLabel", Content)
+    saveInfo1.Size = UDim2.new(1, -20, 0, 20)
+    saveInfo1.Position = UDim2.new(0,0,0,210)
+    saveInfo1.BackgroundTransparency = 1
+    saveInfo1.TextColor3 = Color3.fromRGB(200,200,200)
+    saveInfo1.Font = Enum.Font.Gotham
+    saveInfo1.TextSize = 12
+    saveInfo1.TextWrapped = true
+    saveInfo1.Text = "(Enable to auto-save all UI settings when activated)"
+
+    local saveInfo2 = Instance.new("TextLabel", Content)
+    saveInfo2.Size = UDim2.new(1, -20, 0, 20)
+    saveInfo2.Position = UDim2.new(0,0,0,230)
+    saveInfo2.BackgroundTransparency = 1
+    saveInfo2.TextColor3 = Color3.fromRGB(200,200,200)
+    saveInfo2.Font = Enum.Font.Gotham
+    saveInfo2.TextSize = 12
+    saveInfo2.TextWrapped = true
+    saveInfo2.Text = "(Takes effect when you Rejoin/Hop server)"
+
     AddLog("Server Tab Loaded")
 end
-
-
 
 -- ===================== MISC TAB (FULL) ======================
 local function LoadMiscTab()
@@ -2318,4 +2339,3 @@ SetActiveTab("Main")
 -- Load default
 LoadMainTab()
 AddLog("GPT HUB V1.1 UPDATE! (BugsFix + More Option)")
-
