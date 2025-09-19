@@ -381,13 +381,6 @@ CreateStepSlider(Content, 0, {0.01,0.05,0.1,0.2,0.5}, States.AutoClick.Delay or 
     AddLog("AutoClick Delay set to "..tostring(v))
 end)
 
-
--- ✅ Slider สำหรับ AutoClick Delay
-CreateStepSlider(Content, 0, {0.01,0.05,0.1,0.2,0.5}, States.AutoClick.Delay or 0.1, function(v)
-    States.AutoClick.Delay = v
-    AddLog("AutoClick Delay set to " .. tostring(v))
-end)
-
     -----------------------------------------------------------------
     -- AUTO RESPAWN
     -----------------------------------------------------------------
@@ -2346,6 +2339,7 @@ SetActiveTab("Main")
 -- Load default
 LoadMainTab()
 AddLog("GPT HUB V1.1 UPDATE! (BugsFix + More Option)")
+
 
 
 
