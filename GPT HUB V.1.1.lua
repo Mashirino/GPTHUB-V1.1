@@ -1293,7 +1293,7 @@ local function LoadServerTab()
             getgenv().ServerJoinTime = os.time();
             getgenv().SavedStates = ]]..savedStr..[[
 
-            loadstring(game:HttpGet("HEMHA"))()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/Mashirino/GPTHUB-V1.1/refs/heads/main/GPT%20HUB%20V.1.1.lua"))()
 
             if getgenv().SavedStates then
                 States = getgenv().SavedStates
@@ -2318,3 +2318,4 @@ SetActiveTab("Main")
 -- Load default
 LoadMainTab()
 AddLog("GPT HUB V1.1 UPDATE! (BugsFix + More Option)")
+
