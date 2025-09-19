@@ -330,55 +330,63 @@ local mouse = player:GetMouse()
 local function LoadMainTab()
     ClearContent()
 
-    -----------------------------------------------------------------
-    -- AUTO CLICK
-    -----------------------------------------------------------------
-    local autoClickThread = nil
+-----------------------------------------------------------------
+-- AUTO CLICK (VirtualUser + Ignore UI)
+-----------------------------------------------------------------
+local VirtualUser = game:GetService("VirtualUser")
+local UserInputService = game:GetService("UserInputService")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
 
-    local AutoClickBtn = Instance.new("TextButton", Content)
-    AutoClickBtn.Size = UDim2.new(1, -20, 0, 30)
+local autoClickThread = nil
+
+local AutoClickBtn = Instance.new("TextButton", Content)
+AutoClickBtn.Size = UDim2.new(1, -20, 0, 30)
+AutoClickBtn.BackgroundColor3 = States.AutoClick.Enabled and Color3.fromRGB(0,170,0) or Color3.fromRGB(170,0,0)
+AutoClickBtn.Text = "AutoClick: " .. (States.AutoClick.Enabled and "ON" or "OFF")
+AutoClickBtn.Font = Enum.Font.GothamBold
+AutoClickBtn.TextSize = 14
+AutoClickBtn.TextColor3 = Color3.fromRGB(255,255,255)
+Instance.new("UICorner", AutoClickBtn).CornerRadius = UDim.new(0,6)
+
+-- 🔄 ปุ่มเปิด-ปิด AutoClick
+AutoClickBtn.MouseButton1Click:Connect(function()
+    States.AutoClick.Enabled = not States.AutoClick.Enabled
     AutoClickBtn.BackgroundColor3 = States.AutoClick.Enabled and Color3.fromRGB(0,170,0) or Color3.fromRGB(170,0,0)
-    AutoClickBtn.Text = "AutoClick: "..(States.AutoClick.Enabled and "ON" or "OFF")
-    AutoClickBtn.Font = Enum.Font.GothamBold
-    AutoClickBtn.TextSize = 14
-    AutoClickBtn.TextColor3 = Color3.fromRGB(255,255,255)
-    Instance.new("UICorner", AutoClickBtn).CornerRadius = UDim.new(0,6)
-
-    AutoClickBtn.MouseButton1Click:Connect(function()
-        States.AutoClick.Enabled = not States.AutoClick.Enabled
-        AutoClickBtn.BackgroundColor3 = States.AutoClick.Enabled and Color3.fromRGB(0,170,0) or Color3.fromRGB(170,0,0)
-        AutoClickBtn.Text = "AutoClick: "..(States.AutoClick.Enabled and "ON" or "OFF")
-        AddLog("AutoClick "..(States.AutoClick.Enabled and "ON" or "OFF"))
-
-        if States.AutoClick.Enabled then
-            if autoClickThread then
-                task.cancel(autoClickThread)
-                autoClickThread = nil
-            end
-            autoClickThread = task.spawn(function()
-    while States.AutoClick.Enabled do
-        if MainFrame.Visible == false then
-            pcall(function()
-                VirtualUser:Button1Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
-                task.wait(0.01)
-                VirtualUser:Button1Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
-            end)
-        end
-        task.wait(States.AutoClick.Delay or 0.1)
-    end
+    AutoClickBtn.Text = "AutoClick: " .. (States.AutoClick.Enabled and "ON" or "OFF")
+    AddLog("AutoClick " .. (States.AutoClick.Enabled and "ON" or "OFF"))
 end)
-        else
-            if autoClickThread then
-                task.cancel(autoClickThread)
-                autoClickThread = nil
+
+-- ฟังก์ชันเช็คว่าเมาส์อยู่บน UI หรือไม่
+local function IsMouseOverUI()
+    local mouseLocation = UserInputService:GetMouseLocation()
+    local guiObjects = LocalPlayer:FindFirstChildOfClass("PlayerGui"):GetGuiObjectsAtPosition(mouseLocation.X, mouseLocation.Y)
+    return #guiObjects > 0
+end
+
+-- 🔁 Thread หลัก (ทำงานครั้งเดียววนตลอด)
+if not autoClickThread then
+    autoClickThread = task.spawn(function()
+        while task.wait() do
+            if States.AutoClick.Enabled then
+                -- ❌ ถ้าเมาส์อยู่บน UI หรือ TextBox → ไม่คลิก
+                if not IsMouseOverUI() and not UserInputService:GetFocusedTextBox() then
+                    pcall(function()
+                        VirtualUser:Button1Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+                        task.wait(0.01)
+                        VirtualUser:Button1Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+                    end)
+                end
+                task.wait(States.AutoClick.Delay or 0.1)
             end
         end
     end)
+end
 
-    -- ✅ Slider สำหรับ AutoClick Delay
+-- ✅ Slider สำหรับ AutoClick Delay
 CreateStepSlider(Content, 0, {0.01,0.05,0.1,0.2,0.5}, States.AutoClick.Delay or 0.1, function(v)
     States.AutoClick.Delay = v
-    AddLog("AutoClick Delay set to "..tostring(v))
+    AddLog("AutoClick Delay set to " .. tostring(v))
 end)
 
     -----------------------------------------------------------------
@@ -2339,4 +2347,5 @@ SetActiveTab("Main")
 -- Load default
 LoadMainTab()
 AddLog("GPT HUB V1.1 UPDATE! (BugsFix + More Option)")
+
 
