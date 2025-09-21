@@ -34,7 +34,7 @@ local Header = Instance.new("TextLabel", MainFrame)
 Header.Size = UDim2.new(1, -60, 0, 30)
 Header.Position = UDim2.new(0, 10, 0, 0)
 Header.BackgroundTransparency = 1
-Header.Text = "GPT HUB V1.1"
+Header.Text = "GPT HUB FINAL"
 Header.Font = Enum.Font.GothamBold
 Header.TextSize = 18
 Header.TextColor3 = Color3.fromRGB(255,255,255)
@@ -134,16 +134,6 @@ local MiscBtn      = CreateSidebarButton("Misc", 170)
 local DrinkBtn     = CreateSidebarButton("Drink", 210)
 local TeleportBtn  = CreateSidebarButton("Teleport", 250)
 local ServerBtn = CreateSidebarButton("Server", 290)
-local LogBtn       = CreateSidebarButton("Log", 330) -- ล่างสุด
-
--- Logging
-local Logs = {}
-local LogChanged = Instance.new("BindableEvent")
-local function AddLog(msg)
-    table.insert(Logs, 1, os.date("[%H:%M:%S] ") .. msg)
-    if #Logs > 200 then table.remove(Logs, #Logs) end
-    LogChanged:Fire()
-end
 
 -- Utility
 local function ClearContent()
@@ -292,7 +282,6 @@ local function setupAutoRespawn(character)
     local humanoid = character:FindFirstChildOfClass("Humanoid") or character:WaitForChild("Humanoid")
     humanoid.Died:Connect(function()
         if States.AutoRespawn.Enabled then
-            AddLog("Respawning in "..States.AutoRespawn.Delay.."s")
             task.wait(States.AutoRespawn.Delay)
             local ok, userData = pcall(function()
                 return workspace:WaitForChild("UserData"):WaitForChild("User_" .. player.UserId)
@@ -301,12 +290,9 @@ local function setupAutoRespawn(character)
                 local spawnNumber = userData:FindFirstChild("Data") and userData.Data:FindFirstChild("SpawnNumber")
                 if spawnNumber and spawnRemote then
                     spawnRemote:FireServer(spawnNumber.Value)
-                    AddLog("Respawned")
                 else
-                    AddLog("Respawn failed: spawnNumber not found or spawnRemote missing")
                 end
             else
-                AddLog("Respawn failed: UserData not found")
             end
         end
     end)
@@ -349,7 +335,6 @@ AutoClickBtn.MouseButton1Click:Connect(function()
     States.AutoClick.Enabled = not States.AutoClick.Enabled
     AutoClickBtn.BackgroundColor3 = States.AutoClick.Enabled and Color3.fromRGB(0,170,0) or Color3.fromRGB(170,0,0)
     AutoClickBtn.Text = "AutoClick: "..(States.AutoClick.Enabled and "ON" or "OFF")
-    AddLog("AutoClick "..(States.AutoClick.Enabled and "ON" or "OFF"))
 
     if States.AutoClick.Enabled then
         -- ถ้ามี thread เดิมให้หยุดก่อน
@@ -378,7 +363,6 @@ end)
 -- ✅ Slider สำหรับ AutoClick Delay
 CreateStepSlider(Content, 0, {0.01,0.05,0.1,0.2,0.5}, States.AutoClick.Delay or 0.1, function(v)
     States.AutoClick.Delay = v
-    AddLog("AutoClick Delay set to "..tostring(v))
 end)
 
     -----------------------------------------------------------------
@@ -400,7 +384,6 @@ end)
                             else
                                 player:LoadCharacter()
                             end
-                            AddLog("AutoRespawn Triggered")
                         end)
                     end
                 end)
@@ -421,7 +404,6 @@ end)
         States.AutoRespawn.Enabled = not States.AutoRespawn.Enabled
         RespawnBtn.BackgroundColor3 = States.AutoRespawn.Enabled and Color3.fromRGB(0,170,0) or Color3.fromRGB(170,0,0)
         RespawnBtn.Text = "AutoRespawn: "..(States.AutoRespawn.Enabled and "ON" or "OFF")
-        AddLog("AutoRespawn "..(States.AutoRespawn.Enabled and "ON" or "OFF"))
 
         if States.AutoRespawn.Enabled then
             StartAutoRespawn()
@@ -446,7 +428,6 @@ end)
         respawnDelayIndex = respawnDelayIndex % #respawnDelaySteps + 1
         States.AutoRespawn.Delay = respawnDelaySteps[respawnDelayIndex]
         RespawnDelayBtn.Text = "Respawn Delay: "..States.AutoRespawn.Delay.."s"
-        AddLog("AutoRespawn Delay set to "..States.AutoRespawn.Delay.."s")
     end)
 
     if States.AutoRespawn.Enabled then
@@ -469,7 +450,6 @@ end)
         States.AntiAFK.Enabled = not States.AntiAFK.Enabled
         AntiAFKBtn.BackgroundColor3 = States.AntiAFK.Enabled and Color3.fromRGB(0,170,0) or Color3.fromRGB(170,0,0)
         AntiAFKBtn.Text = "AntiAFK: "..(States.AntiAFK.Enabled and "ON" or "OFF")
-        AddLog("AntiAFK "..(States.AntiAFK.Enabled and "ON" or "OFF"))
 
         if States.AntiAFK.Enabled then
             task.spawn(function()
@@ -479,7 +459,6 @@ end)
                         VirtualUser:CaptureController()
                         VirtualUser:ClickButton2(Vector2.new())
                     end)
-                    AddLog("AntiAFK Triggered")
                 end
             end)
         end
@@ -501,7 +480,6 @@ end)
         States.AutoTP = not States.AutoTP
         AutoSafeBtn.BackgroundColor3 = States.AutoTP and Color3.fromRGB(0,170,0) or Color3.fromRGB(170,0,0)
         AutoSafeBtn.Text = "Auto To Safe Zone (Hold): "..(States.AutoTP and "ON" or "OFF")
-        AddLog("Auto To Safe Zone "..(States.AutoTP and "ON" or "OFF"))
 
         if States.AutoTP then
             if autoTPConnection then autoTPConnection:Disconnect(); autoTPConnection = nil end
@@ -535,11 +513,9 @@ end)
     Btn.MouseButton1Click:Connect(function()
         if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
             player.Character.HumanoidRootPart.CFrame = SafeZoneCFrame
-            AddLog("Teleported to Safe Zone")
         end
     end)
 
-    AddLog("Main Tab Loaded")
 end
 
 -- Swords Tab (choose weapon to auto-equip)
@@ -559,7 +535,6 @@ local function LoadSwordsTab()
         States.AutoEquip.Enabled = not States.AutoEquip.Enabled
         EquipBtn.BackgroundColor3 = States.AutoEquip.Enabled and Color3.fromRGB(0,170,0) or Color3.fromRGB(170,0,0)
         EquipBtn.Text = "AutoEquip Weapon: "..(States.AutoEquip.Enabled and "ON" or "OFF")
-        AddLog("AutoEquip Weapon "..(States.AutoEquip.Enabled and "ON" or "OFF"))
         if States.AutoEquip.Enabled then
             task.spawn(function()
                 while States.AutoEquip.Enabled do
@@ -571,7 +546,6 @@ local function LoadSwordsTab()
                             local tool = backpack:FindFirstChild(States.AutoEquip.Weapon)
                             if tool and not humanoid:FindFirstChild(States.AutoEquip.Weapon) then
                                 humanoid:EquipTool(tool)
-                                AddLog("Equipped "..States.AutoEquip.Weapon)
                             end
                         end
                     end
@@ -605,7 +579,6 @@ local function LoadSwordsTab()
                 Instance.new("UICorner", Btn).CornerRadius = UDim.new(0,6)
                 Btn.MouseButton1Click:Connect(function()
                     States.AutoEquip.Weapon = tool.Name
-                    AddLog("Selected Weapon: "..tool.Name)
                 end)
             end
         end
@@ -629,7 +602,6 @@ local function LoadSwordsTab()
         end)
     end
 
-    AddLog("Swords Tab Loaded")
 end
 
 ----------------------------------------------------------------
@@ -917,7 +889,6 @@ function LoadPlayerTab()
             if plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
                 if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
                     player.Character.HumanoidRootPart.CFrame = plr.Character.HumanoidRootPart.CFrame + Vector3.new(0,3,0)
-                    AddLog("Teleported to "..plr.Name)
                 end
             end
         end)
@@ -938,7 +909,6 @@ function LoadPlayerTab()
         if btn then btn:Destroy() end
     end)
 
-    AddLog("Player Tab Loaded")
 end
 
 
@@ -1041,6 +1011,55 @@ function LoadDevilFruitTab()
         if fruitEspEnabled then enableFruitESP() else disableFruitESP() end
     end)
 
+	-----------------------------------------------------
+-- Auto Claim Sam (UI + Logic)
+-----------------------------------------------------
+local autoClaimSamThread = nil
+
+local function StartAutoClaimSam()
+    if autoClaimSamThread then return end
+    autoClaimSamThread = task.spawn(function()
+        local ReplicatedStorage = game:GetService("ReplicatedStorage")
+        local RemoteContainer = ReplicatedStorage:FindFirstChild("Connections")
+        if not RemoteContainer then
+            warn("❌ ไม่พบ ReplicatedStorage.Connections")
+            return
+        end
+        local ClaimRemote = RemoteContainer:FindFirstChild("Claim_Sam")
+        if not ClaimRemote then
+            warn("❌ ไม่พบ Remote 'Claim_Sam'")
+            return
+        end
+
+        while States.Fruit.AutoClaimSam do
+            pcall(function()
+                ClaimRemote:FireServer("Claim1") -- 🔑 ปรับ arg ตรงนี้ให้ตรงกับที่ sniff เจอ
+            end)
+            task.wait(States.Fruit.SamDelay or 1)
+        end
+        autoClaimSamThread = nil
+    end)
+end
+
+local autoClaimSamBtn = Instance.new("TextButton", Content)
+autoClaimSamBtn.Size = UDim2.new(1, -20, 0, 30)
+autoClaimSamBtn.Text = "Auto Claim Sam: " .. (States.Fruit.AutoClaimSam and "ON" or "OFF")
+autoClaimSamBtn.BackgroundColor3 = States.Fruit.AutoClaimSam and Color3.fromRGB(0,170,0) or Color3.fromRGB(170,0,0)
+autoClaimSamBtn.TextColor3 = Color3.new(1,1,1)
+autoClaimSamBtn.Font = Enum.Font.GothamBold
+autoClaimSamBtn.TextSize = 14
+Instance.new("UICorner", autoClaimSamBtn).CornerRadius = UDim.new(0,6)
+
+autoClaimSamBtn.MouseButton1Click:Connect(function()
+    States.Fruit.AutoClaimSam = not States.Fruit.AutoClaimSam
+    autoClaimSamBtn.Text = "Auto Claim Sam: " .. (States.Fruit.AutoClaimSam and "ON" or "OFF")
+    autoClaimSamBtn.BackgroundColor3 = States.Fruit.AutoClaimSam and Color3.fromRGB(0,170,0) or Color3.fromRGB(170,0,0)
+    if States.Fruit.AutoClaimSam then
+        StartAutoClaimSam()
+    end
+end)
+
+
     -----------------------------------------------------
     -- รายชื่อผล + ปุ่ม Spectate / Teleport
     -----------------------------------------------------
@@ -1135,7 +1154,6 @@ function LoadDevilFruitTab()
             local cf = getFruitCFrame(fruit)
             if cf and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
                 player.Character.HumanoidRootPart.CFrame = cf + Vector3.new(0,5,0)
-                AddLog("Teleported to "..fruit.Name)
             end
         end)
     end
@@ -1177,44 +1195,8 @@ function LoadDevilFruitTab()
         end
     end)
 
-    AddLog("Devil Fruit Tab Loaded")
 end
 
-
-
-    ----------------------------------------------------------------
-    -- LOG TAB
-    ----------------------------------------------------------------
-local function LoadLogTab()
-    ClearContent()
-    local ListFrame = Instance.new("ScrollingFrame", Content)
-    ListFrame.Size = UDim2.new(1, -20, 1, -20)
-    ListFrame.Position = UDim2.new(0, 0, 0, 0)
-    ListFrame.CanvasSize = UDim2.new(0,0,0,0)
-    ListFrame.ScrollBarThickness = 6
-    ListFrame.BackgroundTransparency = 1
-    local layout = Instance.new("UIListLayout", ListFrame)
-    layout.Padding = UDim.new(0,2)
-
-    local function RefreshLogs()
-        for _,v in pairs(ListFrame:GetChildren()) do if v:IsA("TextLabel") then v:Destroy() end end
-        for i,msg in ipairs(Logs) do
-            local Label = Instance.new("TextLabel", ListFrame)
-            Label.Size = UDim2.new(1, -10, 0, 20)
-            Label.Text = msg
-            Label.TextXAlignment = Enum.TextXAlignment.Left
-            Label.BackgroundTransparency = 1
-            Label.Font = Enum.Font.Code
-            Label.TextSize = 12
-            Label.TextColor3 = Color3.fromRGB(200,200,200)
-        end
-        ListFrame.CanvasSize = UDim2.new(0,0,0,#Logs*22)
-    end
-
-    LogChanged.Event:Connect(RefreshLogs)
-    RefreshLogs()
-    AddLog("Log Tab Loaded")
-end
 
 ----------------------------------------------------------------
 -- SERVER TAB (FULL FIXED with Save Settings + Hide UI)
@@ -1371,7 +1353,6 @@ local function LoadServerTab()
                 getgenv().UIKey = input.KeyCode
                 hideKeyBtn.Text = "Hide UI Key (Now: "..getgenv().UIKey.Name..")"
                 conn:Disconnect()
-                AddLog("Hide UI Key changed to "..getgenv().UIKey.Name)
             end
         end)
     end)
@@ -1387,7 +1368,6 @@ local function LoadServerTab()
     saveBtn.MouseButton1Click:Connect(function()
         getgenv().SaveSettings = not getgenv().SaveSettings
         saveBtn.Text = "Save Settings: " .. (getgenv().SaveSettings and "ON" or "OFF")
-        AddLog("Save Settings "..(getgenv().SaveSettings and "ON" or "OFF"))
     end)
 
     -- ✅ Label อธิบายใต้ปุ่ม Save Settings (2 บรรทัด)
@@ -1411,7 +1391,6 @@ local function LoadServerTab()
     saveInfo2.TextWrapped = true
     saveInfo2.Text = "(Takes effect when you Rejoin/Hop server)"
 
-    AddLog("Server Tab Loaded")
 end
 
 -- ===================== MISC TAB (FULL) ======================
@@ -1432,7 +1411,6 @@ local function LoadMiscTab()
                         if not States.Misc.AutoChest then break end
                         if chest:IsA("Model") and chest.PrimaryPart then
                             player.Character.HumanoidRootPart.CFrame = chest.PrimaryPart.CFrame + Vector3.new(0,3,0)
-                            AddLog("TP chest "..tostring(chest.PrimaryPart.Position))
                             task.wait(0.1)
                         end
                     end
@@ -1475,7 +1453,6 @@ local function LoadMiscTab()
         States.Misc.Noclip = not States.Misc.Noclip
         noclipBtn.BackgroundColor3 = States.Misc.Noclip and Color3.fromRGB(0,170,0) or Color3.fromRGB(170,0,0)
         noclipBtn.Text = "Noclip: "..(States.Misc.Noclip and "ON" or "OFF")
-        AddLog("Noclip "..(States.Misc.Noclip and "ON" or "OFF"))
     end)
 
     ----------------------------------------------------------------
@@ -1494,7 +1471,6 @@ local function LoadMiscTab()
         States.Misc.ClickTP = not States.Misc.ClickTP
         ctpBtn.BackgroundColor3 = States.Misc.ClickTP and Color3.fromRGB(0,170,0) or Color3.fromRGB(170,0,0)
         ctpBtn.Text = "ClickTP: "..(States.Misc.ClickTP and "ON" or "OFF")
-        AddLog("ClickTP "..(States.Misc.ClickTP and "ON" or "OFF"))
     end)
 
 ----------------------------------------------------------------
@@ -1529,7 +1505,6 @@ toggleKeyBtn.MouseButton1Click:Connect(function()
             toggleKeyBtn.BackgroundColor3 = Color3.fromRGB(120,120,120)
             listeningForToggleKey = false
             conn:Disconnect()
-            AddLog("ClickTP Toggle Key changed to "..States.Misc.ClickTPKey.Name)
         end
     end)
 end)
@@ -1539,7 +1514,6 @@ UserInputService.InputBegan:Connect(function(input,gp)
     if gp then return end
     if input.KeyCode == States.Misc.ClickTPKey then
         States.Misc.ClickTP = not States.Misc.ClickTP
-        AddLog("ClickTP "..(States.Misc.ClickTP and "ON" or "OFF"))
 
         -- หา Button ของ ClickTP แล้วอัปเดตสี+ข้อความ
         for _,btn in ipairs(Content:GetChildren()) do
@@ -1700,7 +1674,6 @@ CreateStepSlider(Content, 0, {100,200,300,400,500,600,700,800,900,1000}, States.
     States.Misc.FlightSpeed = v 
 end)
 
-AddLog("Misc Tab Loaded")
 end
 -- =====================================================
 
@@ -2036,7 +2009,6 @@ local function LoadFruitTab()
     warnTH.TextColor3 = Color3.fromRGB(255,150,150)
     warnTH.Position = UDim2.new(0, 0, 1, -40)
 
-    AddLog("Fruit Tab Loaded")
 end
 
 
@@ -2069,9 +2041,7 @@ local function LoadTPTab()
         task.wait(0.15)
         if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
             player.Character.HumanoidRootPart.CFrame = farmCaveDemon
-            AddLog("Teleported to Cave Demon farm (temp noclip)")
         else
-            AddLog("TP Cave Demon failed: no character")
         end
         task.wait(0.2)
         if noclipConnection then noclipConnection:Disconnect(); noclipConnection = nil end
@@ -2154,7 +2124,6 @@ end)
         btn.MouseButton1Click:Connect(function()
             if plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
                 plr.Character.HumanoidRootPart.CFrame = cframe
-                AddLog("TP: "..name)
             end
         end)
     end
@@ -2174,7 +2143,6 @@ end)
     createTPButton("TP Quest", CFrame.new(898,270,1219))
     createTPButton("BigTree", CFrame.new(-6029,402,-8.5))
 
-    AddLog("TP Tab Loaded")
 end
 -- ===================================================
 
@@ -2200,7 +2168,6 @@ end)
 mouse.Button1Down:Connect(function()
     if States.Misc.ClickTP and mouse.Target and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
         player.Character.HumanoidRootPart.CFrame = CFrame.new(mouse.Hit.p + Vector3.new(0,5,0))
-        AddLog("ClickTP to: "..tostring(mouse.Hit.p))
     end
 end)
 
@@ -2245,7 +2212,6 @@ local function StartAutoEquipWatcher()
                         local tool = backpack:FindFirstChild(States.AutoEquip.Weapon)
                         if tool and humanoid and not player.Character:FindFirstChild(States.AutoEquip.Weapon) then
                             pcall(function() humanoid:EquipTool(tool) end)
-                            AddLog("AutoEquipped: "..States.AutoEquip.Weapon)
                         end
                     end
                 end
@@ -2265,7 +2231,6 @@ local TabButtons = {
     Drink = DrinkBtn,
     Teleport = TeleportBtn,
     Server = ServerBtn,
-    Log = LogBtn
 }
 
 -- ฟังก์ชันเปลี่ยนสีปุ่ม
@@ -2327,24 +2292,11 @@ ServerBtn.MouseButton1Click:Connect(function()
     SetActiveTab("Server")
 end)
 
-LogBtn.MouseButton1Click:Connect(function()
-    StopFruitThreads()
-    LoadLogTab()
-    SetActiveTab("Log")
-end)
 
 -- ตั้งค่าเริ่มต้น (เปิดมาหน้า Main)
 SetActiveTab("Main")
 
 -- Load default
 LoadMainTab()
-AddLog("GPT HUB V1.1 UPDATE! (BugsFix + More Option)")
-
-
-
-
-
-
-
 
 
